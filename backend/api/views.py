@@ -1,8 +1,32 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics
-from .serializers import UserSerializer
+from .serializers import CourseSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from .models import Course
+
+class CourseListCreate(generics.ListCreateAPIView):
+    serializer_class = CourseSerializer
+    permission_classes  = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Course.objects.filter(author=user)
+
+    def perform_create(self, serializer):
+        if serializer.is_valid():
+            serializer.save(author=self.request.user)
+        else:
+            print(serializer.errors)
+class CourseDelete(generics.DestroyAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        user = self.request.user
+        return Course.objects.filter(author=user)
+
+
 
 
 
